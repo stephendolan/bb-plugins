@@ -14,6 +14,7 @@ import { providerMark } from "./provider-marks.ts";
 import {
   mergeLastKnownWindows,
   sidebarUsagePrimarySummary,
+  sidebarUsagePrimaryWindow,
   sidebarUsageSummary,
   sidebarUsageWindows,
 } from "./sidebar-usage.ts";
@@ -317,7 +318,6 @@ export function mountSidebarUsageStrip(signal: AbortSignal): () => void {
 
     for (const providerId of enabledProviderIds) {
       const provider = providerFor(providerId);
-      const pair = sidebarUsageWindows(provider);
       const button = element("button", "usage-tracker-sidebar__provider");
       button.type = "button";
       button.dataset.provider = providerId;
@@ -331,7 +331,7 @@ export function mountSidebarUsageStrip(signal: AbortSignal): () => void {
 
       const mark = element("span", "usage-tracker-sidebar__mark");
       mark.append(providerGlyph(providerId));
-      const primaryWindow = pair.fiveHour ?? pair.weekly;
+      const primaryWindow = sidebarUsagePrimaryWindow(provider);
       const reading = element(
         "span",
         "usage-tracker-sidebar__reading",

@@ -2,6 +2,13 @@
 
 All notable changes to Usage Tracker are documented here.
 
+## Unreleased
+
+### Changed
+
+- The compact sidebar reading and progress bar now prefer the weekly limit,
+  falling back to the five-hour limit when weekly usage is unavailable.
+
 ## 0.1.2 - 2026-08-17
 
 ### Changed

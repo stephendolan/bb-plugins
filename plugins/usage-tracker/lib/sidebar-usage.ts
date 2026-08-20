@@ -49,9 +49,15 @@ export function sidebarUsageSummary(provider: ProviderUsage): string {
   return `${fiveHourValue}% 5h · ${weeklyValue}% wk`;
 }
 
-export function sidebarUsagePrimarySummary(provider: ProviderUsage): string {
+export function sidebarUsagePrimaryWindow(
+  provider: ProviderUsage,
+): UsageWindow | null {
   const { fiveHour, weekly } = sidebarUsageWindows(provider);
-  const primary = fiveHour ?? weekly;
+  return weekly ?? fiveHour;
+}
+
+export function sidebarUsagePrimarySummary(provider: ProviderUsage): string {
+  const primary = sidebarUsagePrimaryWindow(provider);
   return primary === null ? "—%" : `${formatUsedPercent(primary.usedPercent)}%`;
 }
 

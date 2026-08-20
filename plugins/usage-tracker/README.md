@@ -23,6 +23,8 @@ usage reading, without adding a navigation item or a separate plugin page.
 ## Features
 
 - Shows Codex and Claude Code subscription usage in BB's sidebar footer.
+- Uses each provider's weekly limit for the compact reading, falling back to
+  the five-hour limit when weekly usage is unavailable.
 - Lets you show or hide Codex and Claude Code independently; the strip
   compacts for one provider and disappears when both are disabled.
 - Expands either provider to show its five-hour and weekly percentages.
@@ -61,6 +63,7 @@ to see the recovery instruction reported by BB.
 
 The collapsed strip is designed for quick scanning:
 
+- Each provider's compact percentage and progress bar show its weekly limit.
 - Select the Claude Code or Codex reading to open its details in place.
 - Review the full **5-hour limit**, **weekly limit**, and their reset times.
 - Select the same provider again, use the close button, press <kbd>Esc</kbd>,

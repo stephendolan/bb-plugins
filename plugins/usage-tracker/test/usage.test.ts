@@ -18,6 +18,7 @@ import {
 import {
   mergeLastKnownWindows,
   sidebarUsagePrimarySummary,
+  sidebarUsagePrimaryWindow,
   sidebarUsageSummary,
   sidebarUsageWindows,
 } from "../lib/sidebar-usage.ts";
@@ -178,7 +179,7 @@ test("formats reset, update, percentage, and cost copy safely", () => {
   );
 });
 
-test("projects five-hour and weekly windows into the compact sidebar copy", () => {
+test("shows weekly usage as the compact default", () => {
   const provider = normalizeUsage(
     healthyResponse(),
     { id: null, name: null },
@@ -188,7 +189,27 @@ test("projects five-hour and weekly windows into the compact sidebar copy", () =
   assert.equal(windows.fiveHour?.label, "Five-hour limit");
   assert.equal(windows.weekly?.label, "Weekly limit");
   assert.equal(sidebarUsageSummary(provider), "120% 5h · 17.3% wk");
-  assert.equal(sidebarUsagePrimarySummary(provider), "120%");
+  assert.equal(sidebarUsagePrimaryWindow(provider)?.label, "Weekly limit");
+  assert.equal(sidebarUsagePrimarySummary(provider), "17.3%");
+});
+
+test("falls back to five-hour usage when no weekly limit is reported", () => {
+  const provider = normalizeUsage(
+    healthyResponse(),
+    { id: null, name: null },
+  ).providers[0]!;
+  const fiveHourOnly = {
+    ...provider,
+    windows: provider.windows.filter(
+      (window) => window.label === "Five-hour limit",
+    ),
+  };
+
+  assert.equal(
+    sidebarUsagePrimaryWindow(fiveHourOnly)?.label,
+    "Five-hour limit",
+  );
+  assert.equal(sidebarUsagePrimarySummary(fiveHourOnly), "120%");
 });
 
 test("keeps last-known sidebar windows through partial and failed refreshes", () => {
