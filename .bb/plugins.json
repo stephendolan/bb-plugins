@@ -1,8 +1,16 @@
 {
   "$schema": "https://getbb.app/schemas/plugins.schema.json",
   "schemaVersion": 1,
-  "name": "mateocerquetella-bb-plugins",
+  "name": "stephendolan-bb-plugins",
   "plugins": [
+    {
+      "name": "image-copy",
+      "source": "./plugins/image-copy"
+    },
+    {
+      "name": "project-palette",
+      "source": "./plugins/project-palette"
+    },
     {
       "name": "taskboard",
       "source": "./plugins/taskboard"

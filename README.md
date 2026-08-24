@@ -9,7 +9,7 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/MateoCerquetella/bb-plugins/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/MateoCerquetella/bb-plugins/ci.yml?branch=main&style=flat-square&label=CI" alt="CI status" /></a>
+  <a href="https://github.com/stephendolan/bb-plugins/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/stephendolan/bb-plugins/ci.yml?branch=main&style=flat-square&label=CI" alt="CI status" /></a>
   <a href="https://www.npmjs.com/package/bb-plugin-taskboard"><img src="https://img.shields.io/npm/v/bb-plugin-taskboard?style=flat-square&label=Taskboard" alt="Taskboard npm version" /></a>
   <a href="https://www.npmjs.com/package/bb-plugin-usage-tracker"><img src="https://img.shields.io/npm/v/bb-plugin-usage-tracker?style=flat-square&label=Usage%20Tracker" alt="Usage Tracker npm version" /></a>
   <img src="https://img.shields.io/badge/BB-%E2%89%A5%200.38-7c3aed?style=flat-square" alt="BB 0.38 or newer" />
@@ -24,6 +24,8 @@
 | --- | --- | --- | --- |
 | <img src="./plugins/taskboard/assets/icon.svg" width="28" height="28" alt="" /> | [Taskboard](./plugins/taskboard) | `bb plugin install npm:bb-plugin-taskboard` | Brings each BB project's GitHub, Linear, or Jira tasks into one focused List or Kanban board. |
 | <img src="./plugins/usage-tracker/assets/icon.svg" width="28" height="28" alt="" /> | [Usage Tracker](./plugins/usage-tracker) | `bb plugin install npm:bb-plugin-usage-tracker` | Keeps Codex and Claude Code 5-hour and weekly limits beside BB's sidebar utility icons. |
+|  | [Image Copy](./plugins/image-copy) | `bb plugin install git:https://github.com/stephendolan/bb-plugins.git@main --plugin image-copy` | Adds an image-copy button to bb's native file preview. |
+|  | [Project Palette](./plugins/project-palette) | `bb plugin install git:https://github.com/stephendolan/bb-plugins.git@main --plugin project-palette` | Opens a searchable new-thread project picker with `⌘⇧P` / `Ctrl+Shift+P`. |
 
 ## Taskboard quick start
 
@@ -85,12 +87,14 @@ workspace once, install the shared dependencies, and register a plugin as a
 local-path source:
 
 ```sh
-git clone https://github.com/MateoCerquetella/bb-plugins.git
+git clone https://github.com/stephendolan/bb-plugins.git
 cd bb-plugins
 npm install
 npm run build
 bb plugin install ./plugins/taskboard
 bb plugin install ./plugins/usage-tracker
+bb plugin install ./plugins/image-copy
+bb plugin install ./plugins/project-palette
 ```
 
 BB reads local-path plugins in place, so the development loop stays short:
@@ -101,14 +105,18 @@ npm install
 npm run build
 bb plugin reload taskboard
 bb plugin reload usage-tracker
+bb plugin reload image-copy
+bb plugin reload project-palette
 ```
 
 BB 0.38 and newer reads the repository's `.bb/plugins.json` collection, so a
 plugin can also be installed straight from Git:
 
 ```sh
-bb plugin install git:https://github.com/MateoCerquetella/bb-plugins.git@main --plugin taskboard
-bb plugin install git:https://github.com/MateoCerquetella/bb-plugins.git@main --plugin usage-tracker
+bb plugin install git:https://github.com/stephendolan/bb-plugins.git@main --plugin taskboard
+bb plugin install git:https://github.com/stephendolan/bb-plugins.git@main --plugin usage-tracker
+bb plugin install git:https://github.com/stephendolan/bb-plugins.git@main --plugin image-copy
+bb plugin install git:https://github.com/stephendolan/bb-plugins.git@main --plugin project-palette
 ```
 
 Each released plugin still gets its own npm package for one-command installs
