@@ -55,7 +55,84 @@ async function copyRenderedImage(container: HTMLElement): Promise<void> {
   await navigator.clipboard.write([new ClipboardItem({ "image/png": png })]);
 }
 
-function ImageCopyPreview({ experimental_Original }: PluginFileOpenerProps) {
+const LIGHTBOX_COPY_BUTTON_ATTRIBUTE = "data-image-copy-lightbox-button";
+
+function installLightboxCopyButtons(signal: AbortSignal): () => void {
+  const timers = new Set<number>();
+
+  function decorateLightboxes() {
+    for (const closeButton of Array.from(
+      document.querySelectorAll<HTMLButtonElement>(
+        'button[aria-label="Close image preview"]',
+      ),
+    )) {
+      const lightbox = closeButton.closest('[role="dialog"]') as HTMLElement | null;
+      if (
+        !lightbox ||
+        !lightbox.querySelector("img") ||
+        lightbox.querySelector(`[${LIGHTBOX_COPY_BUTTON_ATTRIBUTE}]`)
+      ) {
+        continue;
+      }
+
+      const button = document.createElement("button");
+      button.type = "button";
+      button.ariaLabel = "Copy image";
+      button.title = "Copy image";
+      button.textContent = "Copy";
+      button.setAttribute(LIGHTBOX_COPY_BUTTON_ATTRIBUTE, "");
+      button.className =
+        "absolute right-14 top-2 z-10 inline-flex h-9 cursor-pointer items-center justify-center rounded-full bg-black/45 px-3 text-sm font-medium text-white transition-colors hover:bg-black/60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white disabled:pointer-events-none disabled:opacity-50";
+      button.addEventListener("click", () => {
+        if (button.disabled) return;
+
+        button.disabled = true;
+        void copyRenderedImage(lightbox)
+          .then(() => {
+            button.textContent = "Copied";
+            button.ariaLabel = "Image copied";
+            toast.success("Image copied");
+            const timer = window.setTimeout(() => {
+              timers.delete(timer);
+              if (!button.isConnected) return;
+              button.textContent = "Copy";
+              button.ariaLabel = "Copy image";
+            }, 1_500);
+            timers.add(timer);
+          })
+          .catch((error) => {
+            toast.error(
+              error instanceof Error ? error.message : "Could not copy image.",
+            );
+          })
+          .finally(() => {
+            button.disabled = false;
+          });
+      });
+      lightbox.append(button);
+    }
+  }
+
+  decorateLightboxes();
+  const observer = new MutationObserver(decorateLightboxes);
+  observer.observe(document.body, { childList: true, subtree: true });
+
+  const dispose = () => {
+    observer.disconnect();
+    for (const timer of timers) window.clearTimeout(timer);
+    timers.clear();
+    document
+      .querySelectorAll(`[${LIGHTBOX_COPY_BUTTON_ATTRIBUTE}]`)
+      .forEach((button) => button.remove());
+  };
+  signal.addEventListener("abort", dispose, { once: true });
+  return () => {
+    signal.removeEventListener("abort", dispose);
+    dispose();
+  };
+}
+
+function ImageCopyPreview({ Original }: PluginFileOpenerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [copied, setCopied] = useState(false);
   const [copying, setCopying] = useState(false);
@@ -76,7 +153,6 @@ function ImageCopyPreview({ experimental_Original }: PluginFileOpenerProps) {
     }
   }
 
-  const Original = experimental_Original;
   return (
     <div ref={containerRef} className="relative h-full min-h-0">
       <Original />
@@ -98,6 +174,11 @@ function ImageCopyPreview({ experimental_Original }: PluginFileOpenerProps) {
 }
 
 export default definePluginApp((app) => {
+  app.contentScripts.register({
+    id: "image-lightbox-copy",
+    mount: ({ signal }) => installLightboxCopyButtons(signal),
+  });
+
   app.slots.fileOpener({
     id: "image-copy",
     title: "Image Copy",
