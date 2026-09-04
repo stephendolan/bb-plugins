@@ -26,6 +26,7 @@
 | <img src="./plugins/usage-tracker/assets/icon.svg" width="28" height="28" alt="" /> | [Usage Tracker](./plugins/usage-tracker) | `bb plugin install npm:bb-plugin-usage-tracker` | Keeps Codex and Claude Code 5-hour and weekly limits beside BB's sidebar utility icons. |
 |  | [Image Copy](./plugins/image-copy) | `bb plugin install git:https://github.com/stephendolan/bb-plugins.git@main --plugin image-copy` | Adds an image-copy button to bb's native file preview. |
 |  | [Project Palette](./plugins/project-palette) | `bb plugin install git:https://github.com/stephendolan/bb-plugins.git@main --plugin project-palette` | Opens a searchable new-thread project picker with `⌘⇧P` / `Ctrl+Shift+P`. |
+|  | [Thread Curator](./plugins/thread-curator) | `bb plugin install git:https://github.com/stephendolan/bb-plugins.git@main --plugin thread-curator` | Names and dynamically groups active threads with one efficient hidden Luna worker. |
 
 ## Taskboard quick start
 
@@ -95,6 +96,7 @@ bb plugin install ./plugins/taskboard
 bb plugin install ./plugins/usage-tracker
 bb plugin install ./plugins/image-copy
 bb plugin install ./plugins/project-palette
+bb plugin install ./plugins/thread-curator
 ```
 
 BB reads local-path plugins in place, so the development loop stays short:
@@ -107,6 +109,7 @@ bb plugin reload taskboard
 bb plugin reload usage-tracker
 bb plugin reload image-copy
 bb plugin reload project-palette
+bb plugin reload thread-curator
 ```
 
 BB 0.38 and newer reads the repository's `.bb/plugins.json` collection, so a
@@ -117,6 +120,7 @@ bb plugin install git:https://github.com/stephendolan/bb-plugins.git@main --plug
 bb plugin install git:https://github.com/stephendolan/bb-plugins.git@main --plugin usage-tracker
 bb plugin install git:https://github.com/stephendolan/bb-plugins.git@main --plugin image-copy
 bb plugin install git:https://github.com/stephendolan/bb-plugins.git@main --plugin project-palette
+bb plugin install git:https://github.com/stephendolan/bb-plugins.git@main --plugin thread-curator
 ```
 
 Each released plugin still gets its own npm package for one-command installs

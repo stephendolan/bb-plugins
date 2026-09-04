@@ -16,6 +16,10 @@
       "source": "./plugins/taskboard"
     },
     {
+      "name": "thread-curator",
+      "source": "./plugins/thread-curator"
+    },
+    {
       "name": "usage-tracker",
       "source": "./plugins/usage-tracker"
     }
