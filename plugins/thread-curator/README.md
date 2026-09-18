@@ -12,8 +12,15 @@ category layout together.
 - Categories may merge, split, rename, and reorder as the active workload
   changes. Existing categories are included in each prompt to discourage
   needless churn.
-- Thread cards keep T3 Sidebar's stable created-at ordering, status slots,
-  settle/snooze shelves, context menu, and collapsed child-thread pills.
+- The sidebar groups active threads by project, with **No project** first and
+  the rest alphabetical, in stable created-at order within each group. Snoozed
+  and Settled sit collapsed beneath. Categories are computed but not rendered;
+  the project sections and shelves carry the grouping.
+- Each card is a title line with one trailing slot for status or age, then a
+  line naming the agent and machine that carries pull request and activity
+  counts. Child threads render as single lighter lines under their parent.
+- Thread action menus use Settle in place of BB's Archive action.
+- `Command-S` settles the active thread (`Ctrl-S` on Windows and Linux).
 - Pinned threads remain in a fixed section above the dynamic groups.
 - The first useful idle state of a new parent thread schedules a curation pass.
   Eligible naming work is batched into that same pass.

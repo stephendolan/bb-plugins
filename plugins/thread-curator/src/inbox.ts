@@ -74,7 +74,8 @@ export function partitionPinned(threads: readonly PluginSidebarThread[]): {
 export interface NestedThread {
   thread: PluginSidebarThread;
   isNested: boolean;
-  isLastSibling: boolean;
+  depth: number;
+  ancestorIds: readonly string[];
 }
 
 /** Parents keep the static sort; included children sit directly below them. */
@@ -102,26 +103,35 @@ export function nestChildrenUnderParents(
   const visited = new Set<string>();
   const append = (
     thread: PluginSidebarThread,
-    isNested: boolean,
-    isLastSibling: boolean,
+    depth: number,
+    ancestorIds: readonly string[],
   ) => {
     if (visited.has(thread.id)) return;
     visited.add(thread.id);
-    nested.push({ thread, isNested, isLastSibling });
+    nested.push({
+      thread,
+      isNested: depth > 0,
+      depth,
+      ancestorIds,
+    });
     const children = childrenByParent.get(thread.id) ?? [];
     const sortedChildren = [...children].sort(
       (left, right) => left.createdAt - right.createdAt,
     );
-    for (const [index, child] of sortedChildren.entries()) {
-      append(child, true, index === sortedChildren.length - 1);
+    for (const child of sortedChildren) {
+      append(
+        child,
+        depth + 1,
+        [...ancestorIds, thread.id],
+      );
     }
   };
 
   for (const root of sortByCreatedAtDescending(roots)) {
-    append(root, false, false);
+    append(root, 0, []);
   }
   for (const thread of sortByCreatedAtDescending(threads)) {
-    append(thread, false, false);
+    append(thread, 0, []);
   }
   return nested;
 }

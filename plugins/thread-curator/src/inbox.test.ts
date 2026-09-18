@@ -176,12 +176,6 @@ describe("child threads", () => {
       true,
       true,
     ]);
-    expect(nested.map(({ isLastSibling }) => isLastSibling)).toEqual([
-      false,
-      false,
-      false,
-      true,
-    ]);
   });
 
   it("lists a thread's children oldest first", () => {
@@ -213,6 +207,28 @@ describe("child threads", () => {
     expect(descendants.map((candidate) => candidate.id)).toEqual([
       "child",
       "grandchild",
+    ]);
+  });
+
+  it("retains depth and ancestry for grandchildren", () => {
+    const nested = nestChildrenUnderParents([
+      thread({ id: "parent", createdAt: 40 }),
+      thread({ id: "child", parentThreadId: "parent", createdAt: 10 }),
+      thread({ id: "grandchild", parentThreadId: "child", createdAt: 20 }),
+      thread({ id: "sibling", parentThreadId: "parent", createdAt: 30 }),
+    ]);
+
+    expect(
+      nested.map(({ thread: candidate, depth, ancestorIds }) => ({
+        id: candidate.id,
+        depth,
+        ancestorIds,
+      })),
+    ).toEqual([
+      { id: "parent", depth: 0, ancestorIds: [] },
+      { id: "child", depth: 1, ancestorIds: ["parent"] },
+      { id: "grandchild", depth: 2, ancestorIds: ["parent", "child"] },
+      { id: "sibling", depth: 1, ancestorIds: ["parent"] },
     ]);
   });
 });

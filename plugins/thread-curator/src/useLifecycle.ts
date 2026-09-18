@@ -28,6 +28,7 @@ export interface LifecycleApi {
   shelfFor(thread: PluginSidebarThread): ThreadShelf;
   canPark(thread: PluginSidebarThread): boolean;
   wakeAtFor(thread: PluginSidebarThread): number | null;
+  settledAtFor(thread: PluginSidebarThread): number | null;
   settleMany(threadIds: readonly string[]): void;
   unsettleMany(threadIds: readonly string[]): void;
   snooze(threadId: string, snoozedUntil: number): void;
@@ -104,6 +105,7 @@ export function useLifecycle(
         resolveShelf(rows.get(thread.id), signalsFor(thread), now),
       canPark: (thread) => canPark(signalsFor(thread)),
       wakeAtFor: (thread) => rows.get(thread.id)?.snoozedUntil ?? null,
+      settledAtFor: (thread) => rows.get(thread.id)?.settledAt ?? null,
       settleMany: (threadIds) => {
         void rpc.call("settleMany", { threadIds: [...threadIds] });
       },

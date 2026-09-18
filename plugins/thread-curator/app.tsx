@@ -11,6 +11,7 @@ import { cn } from "./src/lib/utils";
 import { ParentChip } from "./src/ParentChip";
 import { SubagentsChip } from "./src/SubagentsChip";
 import { ThreadInbox } from "./src/ThreadInbox";
+import { HostThreadActions } from "./src/HostThreadActions";
 
 function RenameAction({ threadId }: PluginThreadHeaderActionProps) {
   const rpc = useRpc<typeof rpcContract>();
@@ -48,6 +49,11 @@ function RenameAction({ threadId }: PluginThreadHeaderActionProps) {
 }
 
 export default definePluginApp((app) => {
+  app.slots.experimental_appOverlay({
+    id: "thread-actions",
+    component: HostThreadActions,
+  });
+
   app.slots.experimental_threadList({
     id: "curated",
     title: "Thread Curator",

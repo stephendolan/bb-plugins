@@ -56,3 +56,10 @@ export function ProviderGlyph({
     </span>
   );
 }
+
+/** The agent's name as text, for rows that spend no icon column on it. */
+export function providerLabel(providerId: string): string {
+  if (providerId === "claude-code") return "Claude";
+  if (providerId === "codex") return "Codex";
+  return providerId;
+}

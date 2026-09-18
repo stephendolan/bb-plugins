@@ -7,19 +7,17 @@ import {
 import { Icon, type IconName } from "./components/Icon";
 import { cn } from "./lib/utils";
 import { RowContextMenu } from "./RowContextMenu";
-import { ProviderGlyph } from "./ProviderGlyph";
+import { providerLabel } from "./ProviderGlyph";
 import { STATUS_SLOT_CLASS, StatusOrTime } from "./StatusSlot";
 import { threadDisplayTitle } from "./inbox";
 import { resolveSnoozePresets } from "./lifecycle";
-import {
-  ChildrenPillContents,
-  childrenPillClassName,
-} from "./SubagentsChip";
 
 /**
- * One thread as a two-line card: project, activity, and status first; then
- * title, pull request, and provider. Status lives in the row instead of in its
- * position, which is what lets the list stay still.
+ * One thread as a two-line card: the title line carries status or age and
+ * child disclosure; the line beneath names the agent and machine and carries
+ * pull request and activity counts. Child rows use bb's compact indented
+ * representation while parent rows keep the curator's metadata and lifecycle
+ * controls.
  *
  * The row is a positioned container with a full-bleed anchor UNDER the
  * controls, the way bb's own thread row does it: a `<button>` inside an `<a>`
@@ -27,7 +25,6 @@ import {
  */
 export function ThreadCard({
   thread,
-  projectName,
   isActive,
   canPark,
   onNavigate,
@@ -35,15 +32,12 @@ export function ThreadCard({
   onSnooze,
   now,
   isNested = false,
-  isLastSibling = false,
+  nestingDepth = 0,
   childThreads = [],
   childrenCollapsed = false,
   onToggleChildren,
-  connectorHighlighted = false,
-  onConnectorHighlight,
 }: {
   thread: PluginSidebarThread;
-  projectName: string | null;
   isActive: boolean;
   /** False while the thread is working or blocked on the user. */
   canPark: boolean;
@@ -54,13 +48,10 @@ export function ThreadCard({
   now: number;
   /** A visible child rendered immediately after its parent. */
   isNested?: boolean;
-  /** Ends the child group's vertical connector at this row. */
-  isLastSibling?: boolean;
+  nestingDepth?: number;
   childThreads?: readonly PluginSidebarThread[];
   childrenCollapsed?: boolean;
   onToggleChildren?: () => void;
-  connectorHighlighted?: boolean;
-  onConnectorHighlight?: (highlighted: boolean) => void;
 }) {
   const actions = useSidebarThreadActions();
   const { splitProps, layout } = useSidebarThreadSplit(thread.id);
@@ -70,40 +61,17 @@ export function ThreadCard({
 
   return (
     <RowContextMenu thread={thread} onSettle={canPark ? onSettle : undefined}>
-      <li
-        className={cn(
-          "list-none",
-          isNested && [
-            "relative ml-4 pl-2",
-            "before:absolute before:-top-px before:left-0 before:border-l before:transition-colors",
-            "after:absolute after:left-0 after:top-1/2 after:w-2 after:border-t after:transition-colors",
-            connectorHighlighted
-              ? "before:border-foreground/35 after:border-foreground/35"
-              : "before:border-sidebar-border after:border-sidebar-border",
-            isLastSibling
-              ? "before:h-[calc(50%+1px)]"
-              : "before:bottom-0",
-          ],
-        )}
-      >
-        {isNested && onToggleChildren ? (
-          <button
-            type="button"
-            aria-label="Collapse children"
-            onClick={onToggleChildren}
-            onMouseEnter={() => onConnectorHighlight?.(true)}
-            onMouseLeave={() => onConnectorHighlight?.(false)}
-            className="absolute -left-1.5 top-0 z-10 h-full w-3 cursor-pointer"
-          />
-        ) : null}
+      <li className="relative list-none">
         <div
           className={cn(
-            "group/card relative rounded-md px-2.5 py-1.5 transition-colors",
+            "group/card relative rounded-md px-2.5 transition-colors",
+            isNested ? "py-1" : "py-1.5",
             isActive ? "bg-sidebar-accent" : "hover:bg-sidebar-accent/60",
             // A thread open in another pane gets a weaker tint than the active
             // row, so the two states stay distinguishable.
             !isActive && layout !== null && "bg-sidebar-accent/30",
           )}
+          style={{ marginLeft: isNested ? nestingDepth * 16 : 0 }}
         >
           <a
             // Both attributes, or bb's nine thread shortcuts stop finding rows.
@@ -121,25 +89,21 @@ export function ThreadCard({
             }}
             className="absolute inset-0 cursor-pointer rounded-md"
           />
-          <div className="pointer-events-none relative flex h-5 items-center gap-1.5">
-            <span className="min-w-0 flex-1 truncate text-2xs font-medium text-muted-foreground">
-              {projectName ?? " "}
+          <div
+            className={cn(
+              // Weight alone carries unread. Fading the title — or the whole
+              // card — makes a thread at rest read as disabled, and at rest is
+              // what most of the list is most of the time.
+              "pointer-events-none relative flex h-5 min-w-0 items-center gap-1.5 text-foreground",
+              thread.isUnread && "font-medium",
+            )}
+          >
+            <span className="min-w-0 flex-1 truncate text-sm">
+              {threadDisplayTitle(thread)}
             </span>
-            {thread.activity.workflows > 0 ? (
-              <ActivityCount
-                label="workflows"
-                count={thread.activity.workflows}
-              />
-            ) : null}
-            {thread.activity.backgroundAgents > 0 ? (
-              <ActivityCount
-                label="background agents"
-                count={thread.activity.backgroundAgents}
-              />
-            ) : null}
-            {/* Status at rest, park actions on hover. Only the status yields,
-                so the project name never shifts. */}
-            {canPark ? (
+            {/* Status at rest, park actions on hover. Only the slot yields, so
+                the title never shifts. */}
+            {!isNested && canPark ? (
               <span className="pointer-events-auto hidden items-center gap-0.5 group-hover/card:flex">
                 <ParkButton
                   label="Snooze until tomorrow"
@@ -155,66 +119,91 @@ export function ThreadCard({
                 />
               </span>
             ) : null}
-            <span
-              className={cn(
-                STATUS_SLOT_CLASS,
-                canPark && "group-hover/card:hidden",
-              )}
-            >
-              <StatusOrTime thread={thread} now={now} />
-            </span>
-          </div>
-          <div
-            className={cn(
-              // Weight alone carries unread. Fading the title — or the whole
-              // card — makes a thread at rest read as disabled, and at rest is
-              // what most of the list is most of the time.
-              "pointer-events-none relative mt-0.5 flex h-5 min-w-0 items-center gap-1.5 text-foreground",
-              thread.isUnread && "font-medium",
-            )}
-          >
-            <span className="min-w-0 flex-1 truncate text-sm">
-              {threadDisplayTitle(thread)}
-            </span>
-            {pullRequest ? (
-              <a
-                href={pullRequest.url}
-                target="_blank"
-                rel="noreferrer"
-                onClick={(event) => event.stopPropagation()}
-                title={pullRequest.title}
+            {!isNested ? (
+              <span
                 className={cn(
-                  "pointer-events-auto relative shrink-0 font-mono text-2xs hover:underline",
-                  pullRequest.state === "merged"
-                    ? "text-[color:var(--pr-merged)]"
-                    : pullRequest.attention === "checks_failed" ||
-                        pullRequest.attention === "conflicts"
-                      ? "text-destructive-text"
-                      : pullRequest.attention === "ready_to_merge"
-                        ? "text-success-foreground"
-                        : "text-muted-foreground",
+                  STATUS_SLOT_CLASS,
+                  canPark && "group-hover/card:hidden",
                 )}
               >
-                #{pullRequest.number}
-              </a>
+                <StatusOrTime thread={thread} now={now} />
+              </span>
             ) : null}
-            <ProviderGlyph providerId={thread.providerId} />
-          </div>
-          {childrenCollapsed && childThreads.length > 0 && onToggleChildren ? (
-            <div className="pointer-events-auto relative mt-1 flex">
+            {childThreads.length > 0 && onToggleChildren ? (
               <button
                 type="button"
-                aria-expanded={false}
-                aria-label={`${childThreads.length} child threads; expand`}
+                aria-expanded={!childrenCollapsed}
+                aria-label={`${childrenCollapsed ? "Expand" : "Collapse"} ${childThreads.length} child ${childThreads.length === 1 ? "thread" : "threads"}`}
                 onClick={(event) => {
                   event.preventDefault();
                   event.stopPropagation();
                   onToggleChildren();
                 }}
-                className={childrenPillClassName()}
+                className="pointer-events-auto relative -mr-1 rounded p-1 text-muted-foreground hover:text-foreground"
               >
-                <ChildrenPillContents threads={childThreads} />
+                <Icon
+                  name="ChevronDown"
+                  className={cn(
+                    "size-3 transition-transform",
+                    childrenCollapsed && "-rotate-90",
+                  )}
+                />
               </button>
+            ) : null}
+          </div>
+          {!isNested ? (
+            <div className="pointer-events-none relative mt-0.5 flex h-4 items-center gap-1.5">
+              <span className="flex min-w-0 flex-1 items-center gap-1 text-2xs text-muted-foreground">
+                <span className="truncate">
+                  {providerLabel(thread.providerId)}
+                  {thread.host ? ` · ${thread.host.name}` : ""}
+                </span>
+                {thread.environment?.workspaceDisplayKind === "managed-worktree" ||
+                thread.environment?.workspaceDisplayKind === "unmanaged-worktree" ? (
+                  <span
+                    role="img"
+                    aria-label="Worktree"
+                    className="flex shrink-0 items-center gap-1"
+                  >
+                    <span aria-hidden="true">·</span>
+                    <Icon name="GitBranch" className="size-2.5" aria-hidden="true" />
+                  </span>
+                ) : null}
+              </span>
+              {thread.activity.workflows > 0 ? (
+                <ActivityCount
+                  label="workflows"
+                  count={thread.activity.workflows}
+                />
+              ) : null}
+              {thread.activity.backgroundAgents > 0 ? (
+                <ActivityCount
+                  label="background agents"
+                  count={thread.activity.backgroundAgents}
+                />
+              ) : null}
+              {pullRequest ? (
+                <a
+                  href={pullRequest.url}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(event) => event.stopPropagation()}
+                  title={pullRequest.title}
+                  className={cn(
+                    "pointer-events-auto relative shrink-0 font-mono text-2xs hover:underline",
+                    pullRequest.state === "merged"
+                      ? "text-[color:var(--pr-merged)]"
+                      : pullRequest.attention === "checks_failed" ||
+                          pullRequest.attention === "conflicts"
+                        ? "text-destructive-text"
+                        : pullRequest.attention === "ready_to_merge"
+                          ? "text-success-foreground"
+                          : "text-muted-foreground",
+                  )}
+                >
+                  #{pullRequest.number}
+                </a>
+              ) : null}
             </div>
           ) : null}
         </div>

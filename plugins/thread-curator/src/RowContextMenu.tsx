@@ -48,14 +48,8 @@ export function RowContextMenu({
           >
             {thread.isPinned ? "Unpin" : "Pin"}
           </Item>
-          {onSettle ? (
-            <>
-              <Separator />
-              <Item onSelect={onSettle}>Settle</Item>
-            </>
-          ) : null}
           <Separator />
-          <Item onSelect={() => actions.archive(thread.id)}>Archive</Item>
+          {onSettle ? <Item onSelect={onSettle}>Settle</Item> : null}
           <Item destructive onSelect={() => actions.requestDelete(thread.id)}>
             Delete
           </Item>
