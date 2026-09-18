@@ -1,0 +1,44 @@
+{
+  "name": "bb-plugin-jev",
+  "version": "0.1.0",
+  "description": "Give BB agents a fast, calibrated classifier backed by TypeSafe's Jev evaluation model.",
+  "type": "module",
+  "license": "MIT",
+  "engines": {
+    "bb": ">=0.43",
+    "bbPluginSdk": ">=0.4.87"
+  },
+  "bb": {
+    "name": "Jev",
+    "description": "A native classification tool for agents, backed by TypeSafe's Jev evaluation model.",
+    "branding": {
+      "icon": "Scale"
+    },
+    "server": "./server.ts",
+    "skills": [
+      "skills"
+    ]
+  },
+  "scripts": {
+    "build": "env -u BB_CLI bb plugin build .",
+    "check": "npm run types:check && npm run typecheck && npm test && npm run build",
+    "dev": "bb plugin dev .",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "types:check": "env -u BB_CLI bb plugin types --check .",
+    "types:refresh": "env -u BB_CLI bb plugin types ."
+  },
+  "dependencies": {
+    "@ai-sdk/typesafe-ai": "^3.0.3",
+    "ai": "^7.0.106",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@get-bb/plugin-sdk": "0.4.87",
+    "@types/json-schema": "^7.0.15",
+    "@types/node": "^22.0.0",
+    "bb-app": "0.43.1",
+    "typescript": "^5.7.0",
+    "vitest": "^4.1.11"
+  }
+}

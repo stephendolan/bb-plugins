@@ -26,6 +26,7 @@
 | <img src="./plugins/usage-tracker/assets/icon.svg" width="28" height="28" alt="" /> | [Usage Tracker](./plugins/usage-tracker) | `bb plugin install npm:bb-plugin-usage-tracker` | Keeps Codex and Claude Code 5-hour and weekly limits beside BB's sidebar utility icons. |
 |  | [Image Copy](./plugins/image-copy) | `bb plugin install git:https://github.com/stephendolan/bb-plugins.git@main --plugin image-copy` | Adds an image-copy button to bb's native file preview. |
 |  | [Project Palette](./plugins/project-palette) | `bb plugin install git:https://github.com/stephendolan/bb-plugins.git@main --plugin project-palette` | Opens a searchable new-thread project picker with `⌘⇧P` / `Ctrl+Shift+P`. |
+|  | [Jev](./plugins/jev) | `bb plugin install git:https://github.com/stephendolan/bb-plugins.git@main --plugin jev` | Gives agents a classification tool backed by TypeSafe's Jev evaluation model. |
 |  | [Thread Curator](./plugins/thread-curator) | `bb plugin install git:https://github.com/stephendolan/bb-plugins.git@main --plugin thread-curator` | Names and dynamically groups active threads with one efficient hidden Luna worker. |
 
 ## Taskboard quick start

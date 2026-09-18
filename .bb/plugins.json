@@ -22,6 +22,10 @@
     {
       "name": "usage-tracker",
       "source": "./plugins/usage-tracker"
+    },
+    {
+      "name": "jev",
+      "source": "./plugins/jev"
     }
   ]
 }
