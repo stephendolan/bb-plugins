@@ -8,28 +8,20 @@
       "source": "./plugins/image-copy"
     },
     {
-      "name": "project-palette",
-      "source": "./plugins/project-palette"
-    },
-    {
-      "name": "taskboard",
-      "source": "./plugins/taskboard"
-    },
-    {
-      "name": "thread-curator",
-      "source": "./plugins/thread-curator"
-    },
-    {
-      "name": "usage-tracker",
-      "source": "./plugins/usage-tracker"
+      "name": "jev",
+      "source": "./plugins/jev"
     },
     {
       "name": "personal-files",
       "source": "./plugins/personal-files"
     },
     {
-      "name": "jev",
-      "source": "./plugins/jev"
+      "name": "project-palette",
+      "source": "./plugins/project-palette"
+    },
+    {
+      "name": "thread-curator",
+      "source": "./plugins/thread-curator"
     }
   ]
 }
