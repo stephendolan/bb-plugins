@@ -150,3 +150,7 @@ automatically.
 Repository layout inspired by
 [smsunarto/bb-plugins](https://github.com/smsunarto/bb-plugins). Thanks to
 Scott Sunarto for the clear multi-plugin structure.
+
+### Personal Files
+
+[Personal Files](plugins/personal-files) adds a directory browser to personal-thread right panels, with folder navigation, filename filtering and BB file previews.

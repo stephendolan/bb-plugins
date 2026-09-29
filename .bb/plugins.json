@@ -24,6 +24,10 @@
       "source": "./plugins/usage-tracker"
     },
     {
+      "name": "personal-files",
+      "source": "./plugins/personal-files"
+    },
+    {
       "name": "jev",
       "source": "./plugins/jev"
     }
