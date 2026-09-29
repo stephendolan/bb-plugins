@@ -9,6 +9,7 @@ import { cn } from "./lib/utils";
 import { ThreadCard } from "./ThreadCard";
 import { SlimRow } from "./SlimRow";
 import { isWorking, useLifecycle } from "./useLifecycle";
+import { useDurableWorkflowThreadIds } from "./useDurableWorkflows";
 import { TRAILING_GLYPH_BOX_CLASS } from "./StatusSlot";
 import {
   descendantsOf,
@@ -27,6 +28,9 @@ export function ThreadInbox({
 }: PluginThreadListProps) {
   const { status, threads, projects } = useSidebarThreads();
   const lifecycle = useLifecycle(threads);
+  const durableWorkflowThreadIds = useDurableWorkflowThreadIds(
+    threads.map((thread) => thread.id),
+  );
   const [nowMinute, setNowMinute] = useState(() => Math.floor(Date.now() / 60_000));
   const [showSnoozed, setShowSnoozed] = useState(false);
   const [showSettled, setShowSettled] = useState(false);
@@ -132,6 +136,7 @@ export function ThreadInbox({
                   expandedParents={expandedParents}
                   onToggleChildren={toggleChildren}
                   onNavigate={onNavigate}
+                  durableWorkflowThreadIds={durableWorkflowThreadIds}
                 />
               </Shelf>
             ) : null}
@@ -141,7 +146,11 @@ export function ThreadInbox({
                 label={group.label}
                 count={group.rows.filter((row) => !row.isNested).length}
                 collapsed={collapsedProjects.has(group.id)}
-                working={group.rows.some((row) => isWorking(row.thread))}
+                working={group.rows.some(
+                  (row) =>
+                    isWorking(row.thread) ||
+                    durableWorkflowThreadIds.has(row.thread.id),
+                )}
                 onToggle={() => toggleProject(group.id)}
               >
                 <ActiveRows
@@ -153,6 +162,7 @@ export function ThreadInbox({
                   expandedParents={expandedParents}
                   onToggleChildren={toggleChildren}
                   onNavigate={onNavigate}
+                  durableWorkflowThreadIds={durableWorkflowThreadIds}
                 />
               </ProjectShelf>
             ))}
@@ -192,6 +202,7 @@ function ActiveRows({
   expandedParents,
   onToggleChildren,
   onNavigate,
+  durableWorkflowThreadIds,
 }: {
   rows: readonly NestedThread[];
   allThreads: readonly PluginSidebarThread[];
@@ -201,6 +212,7 @@ function ActiveRows({
   expandedParents: ReadonlySet<string>;
   onToggleChildren: (threadId: string) => void;
   onNavigate: () => void;
+  durableWorkflowThreadIds: ReadonlySet<string>;
 }) {
   return (
     <>
@@ -221,11 +233,15 @@ function ActiveRows({
             key={thread.id}
             thread={thread}
             isActive={thread.id === activeThreadId}
-            canPark={lifecycle.canPark(thread)}
+            canPark={
+              lifecycle.canPark(thread) &&
+              !durableWorkflowThreadIds.has(thread.id)
+            }
             onNavigate={onNavigate}
             onSettle={() => lifecycle.settleMany(familyOf(allThreads, thread).map(({ id }) => id))}
             onSnooze={(until) => lifecycle.snooze(thread.id, until)}
             now={now}
+            hasDurableWorkflow={durableWorkflowThreadIds.has(thread.id)}
             isNested={isNested}
             nestingDepth={depth}
             childThreads={childThreads}
@@ -253,11 +269,13 @@ function groupByProject(
   threads: readonly PluginSidebarThread[],
   projectById: ReadonlyMap<string, { name: string; isPersonal: boolean }>,
 ): { id: string; label: string; rows: NestedThread[] }[] {
-  const byProject = new Map<string, PluginSidebarThread[]>();
-  for (const thread of threads) {
-    const rows = byProject.get(thread.projectId) ?? [];
-    rows.push(thread);
-    byProject.set(thread.projectId, rows);
+  const byProject = new Map<string, NestedThread[]>();
+  let projectId = "";
+  for (const row of nestChildrenUnderParents(threads)) {
+    if (!row.isNested) projectId = row.thread.projectId;
+    const rows = byProject.get(projectId) ?? [];
+    rows.push(row);
+    byProject.set(projectId, rows);
   }
   return [...byProject.entries()]
     .map(([id, rows]) => {
@@ -266,7 +284,7 @@ function groupByProject(
         id,
         label: project?.isPersonal ? NO_PROJECT_LABEL : project?.name ?? NO_PROJECT_LABEL,
         isPersonal: project?.isPersonal ?? false,
-        rows: nestChildrenUnderParents(rows),
+        rows,
       };
     })
     .sort((left, right) => {

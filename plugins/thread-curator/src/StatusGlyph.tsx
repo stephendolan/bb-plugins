@@ -75,6 +75,7 @@ export function StatusGlyph({
         />
       );
     case "runtime":
+    case "workflow":
       return (
         <Icon
           name="Loading"
@@ -82,8 +83,6 @@ export function StatusGlyph({
           className={cn(shared, "animate-spin text-muted-foreground/50")}
         />
       );
-    case "workflow":
-      return <ShineIcon name="Workflow" label={aria} className={shared} />;
     case "background-agent":
       return <ShineIcon name="UserRoundPlus" label={aria} className={shared} />;
     case "background-command":
@@ -125,7 +124,7 @@ function ShineIcon({
   label,
   className,
 }: {
-  name: "Workflow" | "UserRoundPlus" | "Terminal" | "ListTodo" | "Target";
+  name: "UserRoundPlus" | "Terminal" | "ListTodo" | "Target";
   label: string | undefined;
   className: string;
 }) {

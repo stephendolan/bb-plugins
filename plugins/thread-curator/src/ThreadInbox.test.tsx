@@ -46,6 +46,83 @@ function thread(
 afterEach(cleanup);
 
 describe("ThreadInbox", () => {
+  it("keeps cross-project descendants under the root project's expandable tree", async () => {
+    renderSlot(
+      threadList,
+      {
+        activeThreadId: null,
+        activeProjectId: "proj_1",
+        isCompactViewport: false,
+        onNavigate: vi.fn(),
+        searchQuery: "",
+        Original: () => null,
+      },
+      {
+        rpc: { listLifecycle: () => ({ rows: [] }) },
+        sidebarThreads: {
+          status: "ready",
+          threads: [
+            thread({ id: "grandchild", projectId: "proj_3", title: "Grandchild", parentThreadId: "child" }),
+            thread({ id: "child", projectId: "proj_2", title: "Child", parentThreadId: "thr_1" }),
+            thread({ title: "Parent" }),
+            thread({ id: "unrelated", projectId: "proj_2", title: "Independent" }),
+          ],
+          projects: [
+            { id: "proj_1", name: "Alpha", isPersonal: false },
+            { id: "proj_2", name: "Beta", isPersonal: false },
+            { id: "proj_3", name: "Gamma", isPersonal: false },
+          ],
+        },
+      },
+    );
+
+    const alpha = await screen.findByRole("region", { name: "Alpha" });
+    const beta = screen.getByRole("region", { name: "Beta" });
+    expect(screen.getAllByRole("link").map((link) => link.getAttribute("aria-label"))).toEqual(["Parent", "Independent"]);
+    expect(screen.queryByRole("region", { name: "Gamma" })).toBeNull();
+
+    fireEvent.click(within(alpha).getByRole("button", { name: "Expand 1 child thread" }));
+    expect(within(alpha).getAllByRole("link").map((link) => link.getAttribute("aria-label"))).toEqual(["Parent", "Child"]);
+    fireEvent.click(within(alpha).getByRole("button", { name: "Expand 1 child thread" }));
+    expect(within(alpha).getAllByRole("link").map((link) => link.getAttribute("aria-label"))).toEqual(["Parent", "Child", "Grandchild"]);
+    expect(within(beta).getAllByRole("link").map((link) => link.getAttribute("aria-label"))).toEqual(["Independent"]);
+
+    fireEvent.click(within(alpha).getAllByRole("button", { name: "Collapse 1 child thread" })[0]!);
+    expect(screen.getAllByRole("link").map((link) => link.getAttribute("aria-label"))).toEqual(["Parent", "Independent"]);
+  });
+
+  it("shows a child in its own project when its cross-project parent is archived", async () => {
+    renderSlot(
+      threadList,
+      {
+        activeThreadId: null,
+        activeProjectId: null,
+        isCompactViewport: false,
+        onNavigate: vi.fn(),
+        searchQuery: "",
+        Original: () => null,
+      },
+      {
+        rpc: { listLifecycle: () => ({ rows: [] }) },
+        sidebarThreads: {
+          status: "ready",
+          threads: [
+            thread({ title: "Parent", isArchived: true }),
+            thread({ id: "child", projectId: "proj_2", title: "Child", parentThreadId: "thr_1" }),
+          ],
+          projects: [
+            { id: "proj_1", name: "Alpha", isPersonal: false },
+            { id: "proj_2", name: "Beta", isPersonal: false },
+          ],
+        },
+      },
+    );
+
+    const beta = await screen.findByRole("region", { name: "Beta" });
+    expect(within(beta).getAllByRole("link").map((link) => link.getAttribute("aria-label"))).toEqual(["Child"]);
+    expect(screen.queryByRole("region", { name: "Alpha" })).toBeNull();
+  });
+
   it("collapses one project without hiding another project's threads", async () => {
     renderSlot(
       threadList,

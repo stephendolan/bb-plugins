@@ -30,11 +30,16 @@ export const TRAILING_GLYPH_BOX_CLASS =
 export function StatusOrTime({
   thread,
   now,
+  hasDurableWorkflow = false,
 }: {
   thread: PluginSidebarThread;
   /** Quantized clock, shared by every row in one render. */
   now: number;
+  hasDurableWorkflow?: boolean;
 }) {
+  if (hasDurableWorkflow) {
+    return <StatusGlyph indicator="workflow" label="Workflow in progress" />;
+  }
   if (hasStatusGlyph(thread.indicator)) {
     return (
       <StatusGlyph indicator={thread.indicator} label={thread.indicatorLabel} />

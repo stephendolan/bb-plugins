@@ -31,6 +31,7 @@ export function ThreadCard({
   onSettle,
   onSnooze,
   now,
+  hasDurableWorkflow = false,
   isNested = false,
   nestingDepth = 0,
   childThreads = [],
@@ -46,6 +47,7 @@ export function ThreadCard({
   onSnooze: (snoozedUntil: number) => void;
   /** Quantized clock, so every card in one render agrees on "now". */
   now: number;
+  hasDurableWorkflow?: boolean;
   /** A visible child rendered immediately after its parent. */
   isNested?: boolean;
   nestingDepth?: number;
@@ -126,7 +128,11 @@ export function ThreadCard({
                   canPark && "group-hover/card:hidden",
                 )}
               >
-                <StatusOrTime thread={thread} now={now} />
+                <StatusOrTime
+                  thread={thread}
+                  now={now}
+                  hasDurableWorkflow={hasDurableWorkflow}
+                />
               </span>
             ) : null}
             {childThreads.length > 0 && onToggleChildren ? (
