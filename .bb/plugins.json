@@ -18,10 +18,6 @@
     {
       "name": "project-palette",
       "source": "./plugins/project-palette"
-    },
-    {
-      "name": "thread-curator",
-      "source": "./plugins/thread-curator"
     }
   ]
 }

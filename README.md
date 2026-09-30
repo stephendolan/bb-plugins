@@ -11,7 +11,6 @@ together in one workspace.
 | [Jev](./plugins/jev) | Gives agents a classification tool backed by TypeSafe's Jev evaluation model. |
 | [Personal Files](./plugins/personal-files) | Browses the working directory of personal threads in the right panel. |
 | [Project Palette](./plugins/project-palette) | Opens a searchable new-thread project picker with `⌘⇧P` / `Ctrl+Shift+P`. |
-| [Thread Curator](./plugins/thread-curator) | Names and dynamically groups active threads with one efficient Luna worker. |
 
 ## Install
 
@@ -23,7 +22,6 @@ bb plugin install git:https://github.com/stephendolan/bb-plugins.git@main --plug
 bb plugin install git:https://github.com/stephendolan/bb-plugins.git@main --plugin jev
 bb plugin install git:https://github.com/stephendolan/bb-plugins.git@main --plugin personal-files
 bb plugin install git:https://github.com/stephendolan/bb-plugins.git@main --plugin project-palette
-bb plugin install git:https://github.com/stephendolan/bb-plugins.git@main --plugin thread-curator
 ```
 
 These installs track `main`. After pushing changes, update them with:
@@ -46,8 +44,8 @@ npm run check
 For a tight edit loop, install a plugin from its local path and watch it:
 
 ```sh
-bb plugin install ./plugins/thread-curator
-bb plugin dev ./plugins/thread-curator
+bb plugin install ./plugins/project-palette
+bb plugin dev ./plugins/project-palette
 ```
 
 Switch back to the Git install when you are done so the server runs what is
