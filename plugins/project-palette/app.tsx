@@ -9,6 +9,7 @@ import {
   definePluginApp,
   experimental_useSidebarThreadActions,
   useRpc,
+  type PluginCommandRegistration,
 } from "@get-bb/plugin-sdk/app";
 
 import type { rpcContract } from "./server";
@@ -391,33 +392,22 @@ function ProjectPalette() {
   );
 }
 
+export const openPaletteCommand: PluginCommandRegistration = {
+  id: "open",
+  title: "Open Project Palette",
+  defaultShortcut: { key: "n", mod: true },
+  run() {
+    const handled = !window.dispatchEvent(
+      new CustomEvent(PALETTE_EVENT, { cancelable: true }),
+    );
+    if (handled) return;
+    window.sessionStorage.setItem(OPEN_ON_COMPOSE_KEY, "1");
+    openNewThreadScreen();
+  },
+};
+
 export default definePluginApp((app) => {
-  app.contentScripts.register({
-    id: "project-palette-shortcut",
-    mount({ signal }) {
-      const onKeyDown = (event: KeyboardEvent) => {
-        const isShortcut =
-          (event.metaKey || event.ctrlKey) &&
-          !event.shiftKey &&
-          !event.altKey &&
-          !event.repeat &&
-          event.key.toLowerCase() === "k";
-        if (!isShortcut) return;
-        event.preventDefault();
-        event.stopPropagation();
-        const handled = !window.dispatchEvent(
-          new CustomEvent(PALETTE_EVENT, { cancelable: true }),
-        );
-        if (handled) return;
-        window.sessionStorage.setItem(OPEN_ON_COMPOSE_KEY, "1");
-        openNewThreadScreen();
-      };
-      document.addEventListener("keydown", onKeyDown, {
-        signal,
-        capture: true,
-      });
-    },
-  });
+  app.commands.register(openPaletteCommand);
 
   app.composer.customize({
     id: "project-palette",
