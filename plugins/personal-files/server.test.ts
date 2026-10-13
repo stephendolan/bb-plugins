@@ -43,3 +43,28 @@ it('browses the thread host, preserves existing tabs, and respects a later close
     expect(result).toMatchObject({ hostId: 'host-remote', root: '/work/personal', entries: [{ name: 'reports' }, { name: 'prep.md' }] });
   } finally { await host.harness.lifecycle.dispose(); }
 });
+
+it('waits for a personal thread directory before adding the tab', async () => {
+  const updates: unknown[] = [];
+  let environmentId: string | null = null;
+  const host = createFakePluginHost({ pluginId: 'personal-files', sdk: {
+    threads: {
+      get: async () => makeThreadResponse({ id: 'thread-b', projectId: 'personal', environmentId }) as never,
+      tabs: {
+        get: async () => ({ revision: 1, tabs: [] }),
+        update: async args => { updates.push(args); return { revision: 2, tabs: args.tabs }; },
+      },
+    },
+    environments: { get: async () => ({ path: '/work/personal', hostId: 'host-local' }) as never },
+    projects: { list: async () => [{ id: 'personal', kind: 'personal' }] as never },
+  } });
+  try {
+    plugin(host.bb);
+    await expect(host.harness.behavior.callRpc('ensureTab', { threadId: 'thread-b' })).resolves.toEqual({ available: false, open: false });
+    await expect(host.harness.behavior.callRpc('list', { threadId: 'thread-b', directory: '' })).rejects.toThrow('does not have a directory yet');
+    expect(updates).toEqual([]);
+    environmentId = 'env-b';
+    await expect(host.harness.behavior.callRpc('ensureTab', { threadId: 'thread-b' })).resolves.toEqual({ available: true, open: true });
+    expect(updates).toHaveLength(1);
+  } finally { await host.harness.lifecycle.dispose(); }
+});

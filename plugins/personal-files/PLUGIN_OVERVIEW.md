@@ -1,21 +1,16 @@
-Keep a todo list beside the work it belongs to, in the sidebar and in
-your agent threads.
+Browse a personal thread's working directory from its right panel, including
+directories on remote BB machines.
 
 ## What you get
 
-- An **Example todos** page in the left sidebar that adds, completes, and
-  removes todos.
-- A `bb personal-files` command that does the same from a terminal.
-- Live updates, so a change made in one place reaches every open page at once.
+- A **Files** tab in the right panel of personal threads. It is added the first
+  time you open a thread that has a directory. Closing it is respected; reopen
+  it from the right panel's **+ → Files** action.
+- Folder navigation, a filename filter, and a refresh button.
+- Files open in BB's standard preview.
 
 ## How it works
 
-The todos live in this plugin's own storage on the BB server, one list per
-installation. Nothing leaves the machine, and the plugin needs no account, API
-key, or external service.
-
-## For agents
-
-The bundled skill tells an agent to read the list with `bb personal-files list`, add
-one todo at a time with `bb personal-files add`, and close finished work with
-`bb personal-files done`.
+The plugin resolves the thread's directory and machine on every listing. A
+listing scans at most 1,000 paths and is labeled when incomplete. The plugin
+never renames, writes, or deletes files.

@@ -1,10 +1,25 @@
 # Project Palette for bb
 
-Project Palette replaces bb’s `⌘K` thread search with a keyboard-first
-switcher for projects, machines, and threads.
+Project Palette is a keyboard-first switcher for starting a new bb thread in a
+project or on a machine, or jumping to a recent thread.
 
-Press `⌘K` on macOS or `Ctrl+K` elsewhere from anywhere in bb to open the
-palette. With an empty query it lists every project, every machine, and the
+Press `⌘N` on macOS or `Ctrl+N` elsewhere to open the palette. It is the
+**Open Project Palette** command in bb’s command palette, so you can rebind it
+in Settings → Keyboard or with
+`bb settings keyboard set plugin:project-palette/open <shortcut>`.
+
+bb’s desktop app also binds New thread to `⌘N`, and bb leaves a conflicting
+plugin default unbound. Move New thread to its other default shortcut so the
+palette gets `⌘N`:
+
+```sh
+bb settings keyboard set thread.new Mod+Shift+O
+```
+
+Browsers keep `⌘N` for a new window, so in a browser tab open the palette from
+the command palette or bind another shortcut.
+
+With an empty query the palette lists every project, every machine, and the
 most recently updated threads. Typing filters all three by simple substring
 match on the name or title, so a thread only appears when its title contains
 what you typed. Projects and machines always sort above threads.
