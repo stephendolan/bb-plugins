@@ -24,19 +24,17 @@ export function resolveDirectory(root: string, directory: string) {
 }
 
 export default function plugin(bb: BbPluginApi) {
-  async function environment(threadId: string) {
+  async function threadDirectory(threadId: string) {
     const thread = await bb.sdk.threads.get({ threadId });
     const projects = await bb.sdk.projects.list({ includePersonal: true });
-    if (!projects.some(project => project.id === thread.projectId && project.kind === 'personal')) return null;
-    if (!thread.environmentId) throw new Error('This thread does not have a directory yet.');
+    if (!projects.some(project => project.id === thread.projectId && project.kind === 'personal')) return { kind: 'unsupported' } as const;
+    if (!thread.environmentId) return { kind: 'pending' } as const;
     const env = await bb.sdk.environments.get({ environmentId: thread.environmentId });
-    if (!env.path) throw new Error('This thread does not have a directory yet.');
-    return env;
+    return env.path ? { kind: 'ready', root: env.path, hostId: env.hostId } as const : { kind: 'pending' } as const;
   }
   const pending = new Map<string, Promise<{ available: boolean; open: boolean }>>();
   async function ensureTab(threadId: string) {
-    const env = await environment(threadId);
-    if (!env) return { available: false, open: false };
+    if ((await threadDirectory(threadId)).kind !== 'ready') return { available: false, open: false };
     const key = `tab-installed:${threadId}`;
     if (await bb.storage.kv.get(key)) return { available: true, open: false };
     const current = await bb.sdk.threads.tabs.get({ threadId });
@@ -57,12 +55,14 @@ export default function plugin(bb: BbPluginApi) {
       return result;
     },
     async list({ threadId, directory }) {
-      const env = await environment(threadId);
-      if (!env?.path) throw new Error('Files is available for personal threads.');
-      const folder = resolveDirectory(env.path, directory);
-      const result = await bb.sdk.files.listPaths({ hostId: env.hostId, path: folder, includeFiles: true, includeDirectories: true, limit: 1000 });
+      const location = await threadDirectory(threadId);
+      if (location.kind === 'unsupported') throw new Error('Files is available for personal threads.');
+      if (location.kind === 'pending') throw new Error('This thread does not have a directory yet.');
+      const { root, hostId } = location;
+      const folder = resolveDirectory(root, directory);
+      const result = await bb.sdk.files.listPaths({ hostId, path: folder, includeFiles: true, includeDirectories: true, limit: 1000 });
       return {
-        root: env.path, hostId: env.hostId, directory: path.relative(env.path, folder), truncated: result.truncated,
+        root, hostId, directory: path.relative(root, folder), truncated: result.truncated,
         entries: result.paths.filter(entry => path.dirname(path.resolve(folder, entry.path)) === folder).map(entry => ({ name: entry.name, path: entry.path, kind: entry.kind })).sort((a, b) => {
           if (a.kind !== b.kind) return a.kind === 'directory' ? -1 : 1;
           return a.name.localeCompare(b.name, undefined, { numeric: true });
